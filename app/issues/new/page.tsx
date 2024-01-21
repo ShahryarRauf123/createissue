@@ -98,14 +98,11 @@ const NewIssuePage = () => {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-  const [SimpleMDE, setSimpleMDE] = useState<React.ComponentType<any> | null>(null);
 
   useEffect(() => {
-    // Dynamically import SimpleMDE only on the client side
-    if (process.browser) {
-      import('react-simplemde-editor').then((module) => {
-        setSimpleMDE(() => module.default);
-      });
+    // Check for navigator before using it
+    if (process.browser && navigator) {
+      // Your code that depends on navigator can go here
     }
   }, []);
 
@@ -135,11 +132,14 @@ const NewIssuePage = () => {
 
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
 
-        {SimpleMDE && (
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => <SimpleMDE {...field} />}
+        {/* Load DynamicSimpleMDE only on the client side */}
+        {process.browser && (
+          <DynamicSimpleMDE
+            // Props for SimpleMDE can be passed here
+            placeholder="Description"
+            onChange={(value) => {
+              // Handle changes here if needed
+            }}
           />
         )}
 
@@ -152,4 +152,3 @@ const NewIssuePage = () => {
 };
 
 export default NewIssuePage;
-
