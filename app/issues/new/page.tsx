@@ -72,23 +72,24 @@
 
 // export default NewIssuePage
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
 import { TextField, Button, Callout } from '@radix-ui/themes';
 import axios from 'axios';
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { createIssueSchema } from '@/app/validationSchema';
 import { z } from 'zod';
 import ErrorMessage from '@/app/components/ErrorMessage';
 import { Spinner } from '@/app/components/Spinner';
+import dynamic from 'next/dynamic';
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 
-// Dynamic import for SimpleMDE to prevent SSR issues
-const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });
+// Dynamically import SimpleMDE only on the client side
+const DynamicSimpleMDE = dynamic(() => import('react-simplemde-editor'), {
+  ssr: false,
+});
 
 const NewIssuePage = () => {
   const router = useRouter();
@@ -97,6 +98,16 @@ const NewIssuePage = () => {
   });
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
+  const [SimpleMDE, setSimpleMDE] = useState<React.ComponentType<any> | null>(null);
+
+  useEffect(() => {
+    // Dynamically import SimpleMDE only on the client side
+    if (process.browser) {
+      import('react-simplemde-editor').then((module) => {
+        setSimpleMDE(() => module.default);
+      });
+    }
+  }, []);
 
   return (
     <div className="max-w-xl">
@@ -124,11 +135,13 @@ const NewIssuePage = () => {
 
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
 
-        <Controller
-          name="description"
-          control={control}
-          render={({ field }) => <SimpleMDE placeholder="Description" {...field} />}
-        />
+        {SimpleMDE && (
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => <SimpleMDE {...field} />}
+          />
+        )}
 
         <ErrorMessage>{errors.description?.message}</ErrorMessage>
 
@@ -139,3 +152,4 @@ const NewIssuePage = () => {
 };
 
 export default NewIssuePage;
+
