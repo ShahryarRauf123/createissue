@@ -103,6 +103,7 @@ const NewIssuePage = () => {
         const SimpleMDE = module.default;
         const simpleMDE = new (SimpleMDE as any)({
           element: document.getElementById('description') as HTMLElement,
+          toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "guide"],
         });
       });
     }
