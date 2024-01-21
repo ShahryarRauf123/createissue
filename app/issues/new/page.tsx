@@ -5,7 +5,7 @@ import {useForm, Controller} from 'react-hook-form'
 import "easymde/dist/easymde.min.css";
 import {TextField, Button, Callout, Text} from '@radix-ui/themes'
 import axios from 'axios';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/router';
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createIssueSchema } from "@/app/validationSchema";
