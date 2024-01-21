@@ -72,42 +72,54 @@
 
 // export default NewIssuePage
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
-import { useForm, Controller } from 'react-hook-form';
+// Import necessary modules and components
+import SimpleMDE from "react-simplemde-editor";
+import { useForm } from 'react-hook-form';
+import "easymde/dist/easymde.min.css";
 import { TextField, Button, Callout } from '@radix-ui/themes';
 import axios from 'axios';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { createIssueSchema } from '@/app/validationSchema';
+import { useRouter } from 'next/router';
+import { useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createIssueSchema } from "@/app/validationSchema";
 import { z } from 'zod';
-import ErrorMessage from '@/app/components/ErrorMessage';
-import { Spinner } from '@/app/components/Spinner';
-import dynamic from 'next/dynamic';
+import ErrorMessage from "@/app/components/ErrorMessage";
+import { useEffect } from "react";
+import { Spinner } from "@/app/components/Spinner";
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 
-// Dynamically import SimpleMDE only on the client side
-const DynamicSimpleMDE = dynamic(() => import('react-simplemde-editor'), {
-  ssr: false,
-});
-
 const NewIssuePage = () => {
   const router = useRouter();
-  const { register, control, handleSubmit, formState: { errors } } = useForm<IssueForm>({
+  const { register, handleSubmit, formState: { errors } } = useForm<IssueForm>({
     resolver: zodResolver(createIssueSchema),
   });
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
-  const [SimpleMDE, setSimpleMDE] = useState<React.ComponentType<any> | null>(null);
 
   useEffect(() => {
-    // Dynamically import SimpleMDE only on the client side
-    if (process.browser) {
+    if (typeof window !== 'undefined') {
       import('react-simplemde-editor').then((module) => {
-        setSimpleMDE(() => module.default);
+        const SimpleMDE = module.default;
+        const simpleMDE = new (SimpleMDE as any)({
+          element: document.getElementById('description') as HTMLElement,
+        });
       });
     }
   }, []);
+  
+  
+
+  const onSubmit = async (data: IssueForm) => {
+    try {
+      setSubmitting(true);
+      await axios.post('/issues', data);
+      router.push('/issues');
+    } catch (error) {
+      setSubmitting(false);
+      setError('An unexpected Error Occurred.');
+    }
+  };
 
   return (
     <div className="max-w-xl">
@@ -118,16 +130,7 @@ const NewIssuePage = () => {
       )}
       <form
         className="space-y-4"
-        onSubmit={handleSubmit(async (data) => {
-          try {
-            setSubmitting(true);
-            await axios.post('/issues', data);
-            router.push('/issues');
-          } catch (error) {
-            setSubmitting(false);
-            setError('An unexpected Error Occurred.');
-          }
-        })}
+        onSubmit={handleSubmit(onSubmit)}
       >
         <TextField.Root>
           <TextField.Input placeholder="Title" {...register('title')} />
@@ -135,18 +138,12 @@ const NewIssuePage = () => {
 
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
 
-        {/* Load DynamicSimpleMDE only on the client side */}
-        {process.browser && SimpleMDE && (
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => <SimpleMDE {...field} />}
-          />
-        )}
+        {/* Use a textarea for the description */}
+        <textarea id="description" {...register('description')} placeholder="Description" />
 
         <ErrorMessage>{errors.description?.message}</ErrorMessage>
 
-        <Button disabled={isSubmitting}>Submit new issue {isSubmitting && <Spinner />}</Button>
+        <Button disabled={isSubmitting}>Submit new issue {isSubmitting && <Spinner />} </Button>
       </form>
     </div>
   );
