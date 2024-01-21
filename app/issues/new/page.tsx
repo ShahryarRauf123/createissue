@@ -72,62 +72,54 @@
 
 // export default NewIssuePage
 
-
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import dynamic from 'next/dynamic';
 import { useForm, Controller } from 'react-hook-form';
-import SimpleMDE from "react-simplemde-editor";
 import { TextField, Button, Callout } from '@radix-ui/themes';
 import axios from 'axios';
-import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { createIssueSchema } from "@/app/validationSchema";
+import { useState } from 'react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { createIssueSchema } from '@/app/validationSchema';
 import { z } from 'zod';
-import ErrorMessage from "@/app/components/ErrorMessage";
-import { Spinner } from "@/app/components/Spinner";
+import ErrorMessage from '@/app/components/ErrorMessage';
+import { Spinner } from '@/app/components/Spinner';
 
 type IssueForm = z.infer<typeof createIssueSchema>;
+
+// Dynamic import for SimpleMDE to prevent SSR issues
+const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });
 
 const NewIssuePage = () => {
   const router = useRouter();
   const { register, control, handleSubmit, formState: { errors } } = useForm<IssueForm>({
-    resolver: zodResolver(createIssueSchema)
+    resolver: zodResolver(createIssueSchema),
   });
   const [error, setError] = useState('');
   const [isSubmitting, setSubmitting] = useState(false);
 
-  // Function to handle form submission asynchronously
-  const submitForm = async (data: IssueForm) => {
-    try {
-      setSubmitting(true);
-      await axios.post('/issues', data);
-      router.push('/issues');
-    } catch (error) {
-      setSubmitting(false);
-      setError('An unexpected Error Occurred.');
-    }
-  };
-
-  useEffect(() => {
-    // Check if the code is running on the client side
-    if (typeof window !== 'undefined') {
-      // Your client-side code that uses navigator can go here
-      // For example, you might want to perform some initialization or checks
-    }
-  }, []); // Run this effect only once on component mount
-
   return (
     <div className="max-w-xl">
-      {error && <Callout.Root color="red" className="mb-5"><Callout.Text>{error}</Callout.Text></Callout.Root>}
+      {error && (
+        <Callout.Root color="red" className="mb-5">
+          <Callout.Text>{error}</Callout.Text>
+        </Callout.Root>
+      )}
       <form
-        className='space-y-4'
+        className="space-y-4"
         onSubmit={handleSubmit(async (data) => {
-          // Call the submitForm function to handle form submission
-          await submitForm(data);
+          try {
+            setSubmitting(true);
+            await axios.post('/issues', data);
+            router.push('/issues');
+          } catch (error) {
+            setSubmitting(false);
+            setError('An unexpected Error Occurred.');
+          }
         })}
       >
         <TextField.Root>
-          <TextField.Input placeholder='Title' {...register('title')} />
+          <TextField.Input placeholder="Title" {...register('title')} />
         </TextField.Root>
 
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
@@ -135,7 +127,7 @@ const NewIssuePage = () => {
         <Controller
           name="description"
           control={control}
-          render={({ field }) => <SimpleMDE placeholder='Description' {...field} />}
+          render={({ field }) => <SimpleMDE placeholder="Description" {...field} />}
         />
 
         <ErrorMessage>{errors.description?.message}</ErrorMessage>
@@ -144,6 +136,6 @@ const NewIssuePage = () => {
       </form>
     </div>
   );
-}
+};
 
 export default NewIssuePage;
