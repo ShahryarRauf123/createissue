@@ -73,6 +73,8 @@
 // export default NewIssuePage
 
 // Import necessary modules and components
+
+
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -90,7 +92,10 @@ import { Spinner } from '@/app/components/Spinner';
 
 type IssueForm = z.infer<typeof createIssueSchema>;
 
-const SimpleMDE = dynamic(() => import('react-simplemde-editor'), { ssr: false });
+const SimpleMDE = dynamic(() => import('react-simplemde-editor'), {
+  ssr: false,
+  loading: () => <div>Loading SimpleMDE...</div>,
+});
 
 const NewIssuePage = () => {
   const router = useRouter();
@@ -151,3 +156,4 @@ const NewIssuePage = () => {
 };
 
 export default NewIssuePage;
+
