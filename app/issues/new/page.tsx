@@ -74,7 +74,6 @@
 
 // Import necessary modules and components
 
-
 'use client';
 
 import { useEffect, useState } from 'react';
@@ -156,4 +155,3 @@ const NewIssuePage = () => {
 };
 
 export default NewIssuePage;
-
