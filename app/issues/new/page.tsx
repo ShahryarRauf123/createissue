@@ -49,7 +49,10 @@ const NewIssuePage = () => {
       try {
         setSubmitting(true);
         await axios.post('/issues', data);
-        {typeof window !== 'undefined' && navigator && router.push('/issues');}
+        if (typeof window !== 'undefined' && typeof window.navigator !== 'undefined'){
+          router.push('/issues');
+
+        }
     
       } catch (error) {
         setSubmitting(false);
