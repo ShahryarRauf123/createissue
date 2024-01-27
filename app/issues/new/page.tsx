@@ -15,20 +15,9 @@ import ErrorMessage from "@/app/components/ErrorMessage";
 import { Spinner } from "@/app/components/Spinner";
 import { useEffect } from "react";
 
-
 const  SimpleMDE  = dynamic(() => import('react-simplemde-editor'), {   ssr: false })
 
-
-
 type IssueForm = z.infer<typeof createIssueSchema>;
-
-// const ErrorMessage = dynamic(() => import("@/app/components/ErrorMessage"), {
-//   ssr: false,
-// });
-
-// const Spinner = dynamic(() => import("@/app/components/ErrorMessage"), {
-//   ssr: false,
-// });
 
 const NewIssuePage = () => {
   const router = useRouter();
